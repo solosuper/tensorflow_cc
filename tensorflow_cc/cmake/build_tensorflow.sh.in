@@ -93,7 +93,7 @@ else
     export TF_NEED_CUDA=0
 fi
 
-#sed -i '12i\    *protobuf*;' tensorflow/tf_version_script.lds
+sed -i '12i\    *protobuf*;' tensorflow/tf_version_script.lds
 
 # configure and build
 #            --jobs=$(( $(nproc) * 3 / 4 )) \
