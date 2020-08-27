@@ -42,10 +42,10 @@ target_compile_features(${PROJECT_NAME} INTERFACE ${TARGET_CXX_STANDARD})
 
 target_include_directories(
   ${PROJECT_NAME} INTERFACE
-  #$<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-bin/tensorflow/include>
-  #$<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-bin/tensorflow/include/src>
-  $<INSTALL_INTERFACE:include/tensorflow/bazel-bin/tensorflow/include>
-  $<INSTALL_INTERFACE:include/tensorflow/bazel-bin/tensorflow/include/src>
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/tensorflow/bazel-bin/tensorflow/include>
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/tensorflow/bazel-bin/tensorflow/include/src>
+  $<INSTALL_INTERFACE:include>
+  $<INSTALL_INTERFACE:include/src>
 )
 
 target_link_directories( # CMake 3.13
@@ -122,14 +122,14 @@ install(FILES
 
 # 7) COPY header files to installation tree
 install(
-  DIRECTORY   "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/bazel-bin/"
+  DIRECTORY   "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/tensorflow/include/"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/"
   FILES_MATCHING PATTERN "*.h"
                  PATTERN "*.inc"
                  REGEX ".*Eigen.*"
 )
 
-set(_LIBDIR "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/bin/tensorflow")
+set(_LIBDIR "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/tensorflow")
 
 install(
   FILES
