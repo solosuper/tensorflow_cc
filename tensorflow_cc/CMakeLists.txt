@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/PROJECT_VERSION" version)
 project(
   "tensorflow_cc"
@@ -38,7 +38,7 @@ target_include_directories(
   $<INSTALL_INTERFACE:include/tensorflow/bazel-bin/tensorflow/include/src>
 )
 
-target_link_directories(
+target_link_directories( # CMake 3.13
   ${PROJECT_NAME} INTERFACE
   $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/lib>
   $<INSTALL_INTERFACE:lib>
@@ -98,11 +98,16 @@ export(
 # What comes below applies to when the 'install' target is built,
 # e.g. when you run 'make install'.
 
-# 6) Install the config- and version files.
+# 6) Install the config-, version- and license files.
 install(FILES
   ${CMAKE_BINARY_DIR}/${project_config}
   ${CMAKE_BINARY_DIR}/${version_config}
   DESTINATION ${config_install_dir}
+)
+
+install(FILES
+  ${CMAKE_SOURCE_DIR}/../LICENSE
+  DESTINATION "${CMAKE_INSTALL_DOCDIR}"
 )
 
 # 7) COPY header files to installation tree
