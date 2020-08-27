@@ -20,6 +20,10 @@ set_property(CACHE TARGET_CXX_STANDARD PROPERTY STRINGS
 # Configure the build_tensorflow script.
 configure_file("cmake/build_tensorflow.sh.in" "build_tensorflow.sh" @ONLY)
 
+if(DEFINED ENV{TF_CUDA_COMPUTE_CAPABILITIES})
+  message(STATUS "TF_CUDA_COMPUTE_CAPABILITIES: $ENV{TF_CUDA_COMPUTE_CAPABILITIES}")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(TensorflowBase)
 
