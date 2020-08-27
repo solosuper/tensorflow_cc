@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
-file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/PROJECT_VERSION" version)
+
+if(DEFINED ENV{TENSORFLOW_TAG})
+  set(version "$ENV{TENSORFLOW_TAG}")
+else()
+  file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/PROJECT_VERSION" version)
+endif()
+
 project(
   "tensorflow_cc"
   VERSION "${version}"
