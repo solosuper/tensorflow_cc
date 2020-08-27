@@ -1,3 +1,7 @@
 @PACKAGE_INIT@
 
 include("${CMAKE_CURRENT_LIST_DIR}/TensorflowCCTargets.cmake")
+
+message(STATUS "Loading @PROJECT_NAME@ v${@PROJECT_NAME@_VERSION}: " "${CMAKE_CURRENT_LIST_DIR}")
+
+check_required_components(@CMAKE_PROJECT_NAME@)
