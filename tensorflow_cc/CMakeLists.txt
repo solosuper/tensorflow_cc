@@ -11,46 +11,42 @@ option(REQUIRE_CUDA "Make sure to find and use CUDA (implies ALLOW_CUDA)." OFF)
 set(TENSORFLOW_TAG "v${version}" CACHE STRING "The tensorflow release tag to be checked out (default v${version}).")
 set(TARGET_CXX_STANDARD "cxx_std_11" CACHE STRING "C++ standard to be enforced when linking to TensorflowCC targets (e.g., cxx_std_11).")
 
-# -------------
-# CMake Options
-# -------------
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
-include(CMakePackageConfigHelpers)
-set(CMAKECFG_INSTALL_DIR lib/cmake/TensorflowCC)
-
 set_property(CACHE TARGET_CXX_STANDARD PROPERTY STRINGS
     "cxx_std_11" "cxx_std_14" "cxx_std_17" "cxx_std_20")
-
-# Configure the build_tensorflow script.
-configure_file("cmake/build_tensorflow.sh.in" "build_tensorflow.sh" @ONLY)
 
 # ----------------------------------------------
 # Include External Projects for Tensorflow Build
 # ----------------------------------------------
+# Configure the build_tensorflow script.
+configure_file("cmake/build_tensorflow.sh.in" "build_tensorflow.sh" @ONLY)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(TensorflowBase)
 
 # ------------------------------
 # Define Tensorflow_CC Interface
 # ------------------------------
 
-add_library(tensorflow_cc INTERFACE)
-target_compile_features(tensorflow_cc INTERFACE ${TARGET_CXX_STANDARD})
+add_library(${PROJECT_NAME} INTERFACE)
+target_compile_features(${PROJECT_NAME} INTERFACE ${TARGET_CXX_STANDARD})
 
 target_include_directories(
-  tensorflow_cc INTERFACE
-  $<BUILD_INTERFACE:"${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-bin/tensorflow/include">
-  $<BUILD_INTERFACE:"${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-bin/tensorflow/include/src">
-  $<INSTALL_INTERFACE:"include/tensorflow/bazel-bin/tensorflow/include">
-  $<INSTALL_INTERFACE:"include/tensorflow/bazel-bin/tensorflow/include/src">
+  ${PROJECT_NAME} INTERFACE
+  #$<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-bin/tensorflow/include>
+  #$<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-bin/tensorflow/include/src>
+  $<INSTALL_INTERFACE:include/tensorflow/bazel-bin/tensorflow/include>
+  $<INSTALL_INTERFACE:include/tensorflow/bazel-bin/tensorflow/include/src>
 )
+
+target_link_directories(
+  ${PROJECT_NAME} INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/lib>
+  $<INSTALL_INTERFACE:lib>
+)
+
 target_link_libraries(
-  tensorflow_cc INTERFACE
-  $<BUILD_INTERFACE:"${CMAKE_INSTALL_PREFIX}/lib/libtensorflow_cc.so.${PROJECT_VERSION_MAJOR}">
-  $<INSTALL_INTERFACE:"lib/libtensorflow_cc.so.${PROJECT_VERSION_MAJOR}">
+  ${PROJECT_NAME} INTERFACE
+  libtensorflow_cc.so.${PROJECT_VERSION_MAJOR}
   dl pthread
 )
 
@@ -58,43 +54,72 @@ target_link_libraries(
 # Configure CMake Config and Version Files
 # ----------------------------------------
 
+set(project_targets ${PROJECT_NAME})
+
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
+# 1) Set variables that will be used below.
+string(TOLOWER ${PROJECT_NAME} package_name)
+set(config_install_dir  "share/cmake/${PROJECT_NAME}/")
+set(include_install_dir "include")
+set(namespace           "${PROJECT_NAME}::")
+set(project_config_in   "${CMAKE_CURRENT_LIST_DIR}/cmake/config.cmake.in")
+set(project_config      "${package_name}-config.cmake")
+set(targets_export_name "${package_name}-targets")
+set(version_config      "${package_name}-config-version.cmake")
+
+# 3) Create file '<project>-config.cmake'
+# Should be used instead of the plain 'configure_file'-command.
+# This command needs the file generated in step 2.
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in # input
+  ${CMAKE_BINARY_DIR}/${project_config}             # output
+  INSTALL_DESTINATION ${config_install_dir}         # has no visible effect, but must match
+                                                    # destination in install commands below
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO                # Enabled since this library has no components
+  NO_SET_AND_CHECK_MACRO
+)
+
+# 4) Create file '<project>-config-version.cmake'
 write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/TensorflowCCConfigVersion.cmake"
-  VERSION ${PROJECT_VERSION}
+  ${CMAKE_BINARY_DIR}/${version_config}
   COMPATIBILITY SameMajorVersion
 )
-configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/TensorflowCCConfig.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/TensorflowCCConfig.cmake"
-  INSTALL_DESTINATION "${CMAKECFG_INSTALL_DIR}"
-  NO_SET_AND_CHECK_MACRO # TensorflowCC only uses interface libraries
-  NO_CHECK_REQUIRED_COMPONENTS_MACRO # TensorflowCC does not have components
+
+# 5) Generate an export file for the **build tree**
+export(
+  TARGETS ${project_targets}
+  NAMESPACE ${namespace}
+  FILE ${CMAKE_BINARY_DIR}/${targets_export_name}.cmake
 )
 
-# -------
-# Install
-# -------
+# --- INSTALL --- #
+# What comes below applies to when the 'install' target is built,
+# e.g. when you run 'make install'.
 
-# install all header files
+# 6) Install the config- and version files.
+install(FILES
+  ${CMAKE_BINARY_DIR}/${project_config}
+  ${CMAKE_BINARY_DIR}/${version_config}
+  DESTINATION ${config_install_dir}
+)
+
+# 7) COPY header files to installation tree
 install(
-  DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/"
-  DESTINATION include/tensorflow/bazel-bin
+  DIRECTORY   "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/tensorflow/bazel-bin/"
   FILES_MATCHING PATTERN "*.h"
                  PATTERN "*.inc"
                  REGEX ".*Eigen.*"
 )
+
 install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/tensorflow/libtensorflow_cc.so"
-  DESTINATION lib
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RENAME libtensorflow_cc.so.${PROJECT_VERSION_MAJOR}
-  OPTIONAL
 )
-install(
-  FILES "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/bin/tensorflow/libtensorflow_cc.so"
-  DESTINATION lib
-  RENAME libtensorflow_cc.so.${PROJECT_VERSION_MAJOR}
-  OPTIONAL
-)
+
 # Make versioned symlinks to the library
 install(CODE "execute_process(                          \
   COMMAND ${CMAKE_COMMAND} -E create_symlink            \
@@ -103,32 +128,31 @@ install(CODE "execute_process(                          \
   )"
 )
 
-# --------------------------
-# Install CMake targets file
-# --------------------------
+#set_target_properties(
+#  ${PROJECT_NAME} PROPERTIES EXPORT_NAME TensorflowCC
+#)
 
-set_target_properties(
-  tensorflow_cc PROPERTIES EXPORT_NAME TensorflowCC
-)
+# 8) Associate the target (i.e. the library) with an export.
+# An export is a CMake entity, just like targets,
+# and is not to be confused with the exported FILE in step 5.
 install(
-  TARGETS tensorflow_cc
-  EXPORT TensorflowCCTargets
-)
-install(
-  EXPORT TensorflowCCTargets
-  FILE TensorflowCCTargets.cmake
-  NAMESPACE TensorflowCC::
-  DESTINATION "${CMAKECFG_INSTALL_DIR}"
+  TARGETS ${project_targets}
+  EXPORT  ${targets_export_name} # associates the target with the named export.
+  LIBRARY DESTINATION  ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION  ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION  ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-# install config and version files
+# 9) Generate and install an export file for the **installation tree**
+# Must match the export created in step 8.
 install(
-  FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/TensorflowCCConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/TensorflowCCConfigVersion.cmake"
-  DESTINATION "${CMAKECFG_INSTALL_DIR}"
+  EXPORT      ${targets_export_name}
+  NAMESPACE   ${namespace}
+  DESTINATION ${config_install_dir}
 )
 
+# 10) CPack
 include(cmake/packaging.cmake)
 
 add_custom_target(pack

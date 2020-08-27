@@ -97,7 +97,14 @@ fi
 ./configure
 bazel build --config=opt \
             --config=monolithic \
+            --config=noaws \
+            --config=nogcp \
+            --config=nohdfs \
+            --config=nonccl \
+            --config=v2 \
             $cuda_config_opts \
+            --jobs=$(( $(nproc) * 3 / 4 )) \
+            --local_ram_resources=$(( $(free --mega | awk 'NR == 2 {print $2;}') / 2 )) \
             tensorflow:libtensorflow_cc.so \
             tensorflow:install_headers
 bazel shutdown

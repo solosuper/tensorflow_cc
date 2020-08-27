@@ -1,12 +1,12 @@
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
 
-set(CPACK_PACKAGE_CONTACT "tensorflow_cc maintainer")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "tensorflow_cc")
+set(CPACK_PACKAGE_CONTACT "https://github.com/FloopCZ/tensorflow_cc")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "TensorFlow C++ API through CMake")
 set(CPACK_PACKAGE_DESCRIPTION
-"Package description")
+"TensorFlow C++ API through CMake")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "tensorflow_cc")
-set(CPACK_PACKAGE_VENDOR "GitHub")
+set(CPACK_PACKAGE_VENDOR "https://github.com/FloopCZ/tensorflow_cc")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/../LICENSE")
 set(CPACK_VERBATIM_VARIABLES TRUE)
 
@@ -14,7 +14,7 @@ set(CPACK_DEBIAN_PACKAGE_PROVIDES  "tensorflow_cc")
 set(CPACK_DEBIAN_PACKAGE_CONFLICTS "tensorflow_cc")
 set(CPACK_DEBIAN_PACKAGE_REPLACES  "tensorflow_cc")
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "build-essential")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "cmake")
 
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/FloopCZ/tensorflow_cc")
