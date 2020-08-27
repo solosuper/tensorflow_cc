@@ -93,6 +93,8 @@ else
     export TF_NEED_CUDA=0
 fi
 
+#sed -i '12i\    *protobuf*;' tensorflow/tf_version_script.lds
+
 # configure and build
 #            --jobs=$(( $(nproc) * 3 / 4 )) \
 #            --local_ram_resources=$(( $(free --mega | awk 'NR == 2 {print $2;}') / 2 )) \
