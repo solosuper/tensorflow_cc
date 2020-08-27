@@ -125,3 +125,12 @@ install(
     "${CMAKE_CURRENT_BINARY_DIR}/TensorflowCCConfigVersion.cmake"
   DESTINATION "${CMAKECFG_INSTALL_DIR}"
 )
+
+include(cmake/packaging.cmake)
+
+add_custom_target(pack
+  COMMAND ${CMAKE_CPACK_COMMAND} "-G" "DEB"
+  COMMENT "Running CPack. Please wait..."
+  DEPENDS ${CPACK_COMPONENTS_ALL}
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
