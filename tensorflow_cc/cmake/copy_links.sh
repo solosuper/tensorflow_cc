@@ -5,7 +5,4 @@ set -e
 
 echo "Replacing links with the copies of their targets."
 echo "This may take a while..."
-cp -R "${1}" "${1}.bak"
-rsync -amLq "${1}/" "__tmp__/"
-rm -rf "${1}"
-mv "__tmp__" "${1}"
+rsync -amL ${1}/ __tmp__
