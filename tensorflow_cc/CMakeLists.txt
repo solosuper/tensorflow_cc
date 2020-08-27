@@ -46,7 +46,7 @@ target_link_directories(
 
 target_link_libraries(
   ${PROJECT_NAME} INTERFACE
-  libtensorflow_cc.so.${PROJECT_VERSION_MAJOR}
+  libtensorflow_cc.so
   dl pthread
 )
 
@@ -114,23 +114,16 @@ install(
                  REGEX ".*Eigen.*"
 )
 
+set(_LIBDIR "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/bin/tensorflow")
+
 install(
-  FILES "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-bin/tensorflow/libtensorflow_cc.so"
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RENAME libtensorflow_cc.so.${PROJECT_VERSION_MAJOR}
+  FILES
+    "${_LIBDIR}/libtensorflow_cc.so"
+    "${_LIBDIR}/libtensorflow_cc.so.${PROJECT_VERSION_MAJOR}"
+    "${_LIBDIR}/libtensorflow_cc.so.${PROJECT_VERSION}"
+  TYPE LIB
 )
-
-# Make versioned symlinks to the library
-install(CODE "execute_process(                          \
-  COMMAND ${CMAKE_COMMAND} -E create_symlink            \
-    libtensorflow_cc.so.${PROJECT_VERSION_MAJOR}        \
-    ${CMAKE_INSTALL_PREFIX}/lib/libtensorflow_cc.so     \
-  )"
-)
-
-#set_target_properties(
-#  ${PROJECT_NAME} PROPERTIES EXPORT_NAME TensorflowCC
-#)
+unset(_LIBDIR)
 
 # 8) Associate the target (i.e. the library) with an export.
 # An export is a CMake entity, just like targets,
