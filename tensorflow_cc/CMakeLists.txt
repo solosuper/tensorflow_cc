@@ -163,8 +163,10 @@ install(
 # 10) CPack
 include(cmake/packaging.cmake)
 
-add_custom_target(pack
-  COMMAND ${CMAKE_CPACK_COMMAND} "-G" "DEB"
+# A target called 'package' is automaitcally created. It makes a .deb.
+# Create additional target to compress as tar.gz.
+add_custom_target(compress
+  COMMAND ${CMAKE_CPACK_COMMAND} "-G" "TGZ"
   COMMENT "Running CPack. Please wait..."
   DEPENDS ${CPACK_COMPONENTS_ALL}
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
