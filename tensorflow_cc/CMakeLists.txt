@@ -164,9 +164,9 @@ install(
 include(cmake/packaging.cmake)
 
 # A target called 'package' is automaitcally created. It makes a .deb.
-# Create additional target to compress as tar.gz.
+# Create additional target to compress as tar.bz2.
 add_custom_target(compress
-  COMMAND ${CMAKE_CPACK_COMMAND} "-G" "TGZ"
+  COMMAND ${CMAKE_CPACK_COMMAND} "-G" "TBZ2"
   COMMENT "Running CPack. Please wait..."
   DEPENDS ${CPACK_COMPONENTS_ALL}
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
