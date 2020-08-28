@@ -7,7 +7,7 @@ else()
 endif()
 
 project(
-  "tensorflow_cc"
+  "tensorflow_cpp"
   VERSION "${version}"
 )
 
